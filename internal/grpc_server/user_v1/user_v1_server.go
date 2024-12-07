@@ -8,11 +8,13 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	dest "github.com/rkohnovets/go-auth/api/user_v1"
 )
 
 type User_v1_server struct {
 	dest.UnimplementedUserV1Server
+	DBPool *pgxpool.Pool
 }
 
 func (s *User_v1_server) Get(ctx context.Context, req *dest.IdRequest) (*dest.UserResponse, error) {
