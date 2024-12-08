@@ -19,7 +19,7 @@ const grpcPort = 50051
 
 func main() {
 	// postgresql connection settings
-	config, err := pgxpool.ParseConfig("postgres://username:password@localhost:5432/mydb")
+	config, err := pgxpool.ParseConfig("postgres://admin:pass1word@localhost:54321/user")
 	if err != nil {
 		log.Fatalf("Unable to parse connection string: %v", err)
 	}
