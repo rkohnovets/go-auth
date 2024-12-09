@@ -18,18 +18,8 @@ import (
 const grpcPort = 50051
 
 func main() {
-	// postgresql connection settings
-	config, err := pgxpool.ParseConfig("postgres://admin:pass1word@localhost:54321/user")
-	if err != nil {
-		log.Fatalf("Unable to parse connection string: %v", err)
-	}
-	config.MaxConns = 10
-	config.MinConns = 2
-	config.MaxConnLifetime = time.Hour
-	config.MaxConnIdleTime = 30 * time.Minute
-	config.HealthCheckPeriod = time.Minute
-	// create connection pool
-	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	ctx := context.Background()
+	pool, err := createPgxPool(ctx)
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v", err)
 	}
@@ -54,4 +44,22 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+func createPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
+	// postgresql connection settings
+	config, err := pgxpool.ParseConfig(
+		"postgres://admin:pass1word@localhost:54321/user",
+	)
+	if err != nil {
+		log.Fatalf("Unable to parse connection string: %v", err)
+	}
+	config.MaxConns = 10
+	config.MinConns = 2
+	config.MaxConnLifetime = time.Hour
+	config.MaxConnIdleTime = 30 * time.Minute
+	config.HealthCheckPeriod = time.Minute
+	// create connection pool
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	return pool, err
 }

@@ -119,7 +119,5 @@ func (s *User_v1_server) Update(ctx context.Context, req *dest.UserUpdateRequest
 		log.Printf("not updated user with id %d (no fields to change)", req.Id)
 	}
 
-	req.GetEmail()
-
 	return &emptypb.Empty{}, nil
 }
