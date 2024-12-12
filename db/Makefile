@@ -47,7 +47,7 @@ MIGRATION_DSN=\
 	sslmode=disable
 
 # 1) to install goose CLI into ./bin folder
-install-deps:
+install-goose:
 	GOBIN=$(LOCAL_BIN) go install github.com/pressly/goose/v3/cmd/goose@v3.14.0
 
 # 2) to create some migration files if needed 

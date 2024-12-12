@@ -1,0 +1,14 @@
+---
+
+is_debug: true
+
+listen:
+  bind_ip: "0.0.0.0"
+  port: 50051
+
+db:
+  port: 54321
+  host: "localhost"
+  database_name: "user"
+  user: "admin"
+  password: "pass1word"

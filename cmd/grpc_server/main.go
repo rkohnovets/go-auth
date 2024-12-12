@@ -12,12 +12,22 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	desc "github.com/rkohnovets/go-auth/api/user_v1"
+	"github.com/rkohnovets/go-auth/internal/config"
 	serv "github.com/rkohnovets/go-auth/internal/grpc_server/user_v1"
+	"github.com/rkohnovets/go-auth/pkg/utils"
 )
 
 const grpcPort = 50051
 
 func main() {
+	config := config.GetConfig(log.Default())
+
+	cfgStr, err := utils.GetObjectJsonString(config)
+	if err != nil {
+		log.Fatalf("sdadasdasda")
+	}
+	fmt.Println("loaded config:\n" + cfgStr)
+
 	ctx := context.Background()
 	pool, err := createPgxPool(ctx)
 	if err != nil {
