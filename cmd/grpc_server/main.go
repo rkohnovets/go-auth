@@ -14,34 +14,24 @@ import (
 	desc "github.com/rkohnovets/go-auth/api/user_v1"
 	"github.com/rkohnovets/go-auth/internal/config"
 	serv "github.com/rkohnovets/go-auth/internal/grpc_server/user_v1"
-	"github.com/rkohnovets/go-auth/pkg/utils"
 )
 
-const grpcPort = 50051
-
 func main() {
-	config := config.GetConfig(log.Default())
-
-	cfgStr, err := utils.GetObjectJsonString(config)
-	if err != nil {
-		log.Fatalf("sdadasdasda")
-	}
-	fmt.Println("loaded config:\n" + cfgStr)
-
 	ctx := context.Background()
-	pool, err := createPgxPool(ctx)
-	if err != nil {
-		log.Fatalf("Unable to create connection pool: %v", err)
-	}
+	logger := log.Default()
+	config := config.GetConfig(logger)
+
+	// create database connection pool
+	pool := createPgxPool(ctx, &config)
 	defer pool.Close()
 
-	// start tcp listener
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	// create tcp listener
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Listen.Port))
 	if err != nil {
-		log.Fatalf("failed to listen at %d port: %v", grpcPort, err)
+		log.Fatalf("failed to listen at %d port: %v", config.Listen.Port, err)
 	}
 
-	// start grpc server
+	// create grpc server
 	s := grpc.NewServer()
 	reflection.Register(s)
 	desc.RegisterUserV1Server(s, &serv.User_v1_server{
@@ -49,27 +39,38 @@ func main() {
 	})
 
 	log.Printf("grpc server starting to listen at %v", listener.Addr())
-
 	err = s.Serve(listener)
 	if err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
 
-func createPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
-	// postgresql connection settings
-	config, err := pgxpool.ParseConfig(
-		"postgres://admin:pass1word@localhost:54321/user",
+func createPgxPool(ctx context.Context, config *config.Config) *pgxpool.Pool {
+	connectionString := fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s",
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.DatabaseName,
 	)
+
+	// postgresql connection settings
+	dbConfig, err := pgxpool.ParseConfig(connectionString)
 	if err != nil {
 		log.Fatalf("Unable to parse connection string: %v", err)
 	}
-	config.MaxConns = 10
-	config.MinConns = 2
-	config.MaxConnLifetime = time.Hour
-	config.MaxConnIdleTime = 30 * time.Minute
-	config.HealthCheckPeriod = time.Minute
+	dbConfig.MaxConns = 10
+	dbConfig.MinConns = 2
+	dbConfig.MaxConnLifetime = time.Hour
+	dbConfig.MaxConnIdleTime = 30 * time.Minute
+	dbConfig.HealthCheckPeriod = time.Minute
+
 	// create connection pool
-	pool, err := pgxpool.NewWithConfig(ctx, config)
-	return pool, err
+	pool, err := pgxpool.NewWithConfig(ctx, dbConfig)
+	if err != nil {
+		log.Fatalf("Unable to create connection pool: %v", err)
+	}
+
+	return pool
 }

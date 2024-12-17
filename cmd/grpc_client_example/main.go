@@ -52,6 +52,8 @@ func main() {
 		fmt.Print("input: ")
 
 		switch readLine() {
+		case "0":
+			return
 		case "1":
 			r, err := c.Create(ctx, &desc.UserRegisterRequest{
 				Name:            gofakeit.BeerName(),
